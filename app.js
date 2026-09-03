@@ -467,3 +467,4 @@ function bindEvents() {
     document.getElementById('modal').onclick = (e) => {
         if (e.target.id === 'modal') document.getElementById('modal').classList.add('hidden');
     };
+}
