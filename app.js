@@ -125,8 +125,8 @@ function applyFiltersAndRender() {
     renderPage();
 }
 
-// ================= 标签颜色映射 =================
-const TAG_COLORS = ['tag-blue', 'tag-green', 'tag-amber', 'tag-rose', 'tag-cyan', 'tag-purple'];
+// ================= 标签颜色映射（适配亮蓝卡片） =================
+const TAG_COLORS = ['tag-white', 'tag-blue', 'tag-cyan', 'tag-green', 'tag-amber', 'tag-rose'];
 function getTagColorClass(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
@@ -215,7 +215,7 @@ function renderParentCategories() {
     const tree = AppState.config.categoryTree;
     for (const parent of Object.keys(tree)) {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-300 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap parent-cat-btn shadow-sm';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-300 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition whitespace-nowrap parent-cat-btn shadow-sm';
         btn.dataset.cat = parent;
         btn.textContent = parent;
         bar.appendChild(btn);
@@ -237,7 +237,7 @@ function renderChildCategories(parentName) {
 
     children.forEach(child => {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-500 border border-slate-300 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50 transition whitespace-nowrap child-cat-btn shadow-sm';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-500 border border-slate-300 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap child-cat-btn shadow-sm';
         btn.dataset.cat = child;
         btn.textContent = child;
         bar.appendChild(btn);
@@ -276,7 +276,7 @@ const StatsManager = {
                         topList.insertAdjacentHTML('beforeend', `
                             <li class="flex justify-between items-center">
                                 <span class="truncate mr-2 text-slate-700 font-medium" title="${item.title}">${index + 1}. ${item.title}</span>
-                                <span class="text-indigo-600 font-mono text-xs font-bold bg-indigo-50 px-2 py-0.5 rounded">${item.count}</span>
+                                <span class="text-blue-600 font-mono text-xs font-bold bg-blue-50 px-2 py-0.5 rounded">${item.count}</span>
                             </li>
                         `);
                     });
@@ -321,8 +321,8 @@ function showModal(item) {
     
     const meta = document.getElementById('modal-meta');
     meta.innerHTML = `
-        <span class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-lg font-semibold">📅 ${item.date}</span>
-        ${(item.categories || []).map(c => `<span class="bg-violet-100 text-violet-700 border border-violet-200 px-2.5 py-1 rounded-lg font-semibold">🏷️ ${c}</span>`).join('')}
+        <span class="bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg font-semibold">📅 ${item.date}</span>
+        ${(item.categories || []).map(c => `<span class="bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-lg font-semibold">🏷️ ${c}</span>`).join('')}
     `;
 
     const linksContainer = document.getElementById('modal-links');
@@ -334,9 +334,9 @@ function showModal(item) {
         item.links.forEach(link => {
             if (link.url && link.url.startsWith('http')) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <a href="${link.url}" target="_blank" class="block w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 hover:border-indigo-400 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow-md">
-                        <span class="font-bold text-indigo-700 text-sm">🔗 ${link.platform}</span>
-                        ${link.note ? `<span class="text-xs text-indigo-500 ml-2">(${link.note})</span>` : ''}
+                    <a href="${link.url}" target="_blank" class="block w-full bg-blue-50 hover:bg-blue-100 border border-blue-200 hover:border-blue-400 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow-md">
+                        <span class="font-bold text-blue-700 text-sm">🔗 ${link.platform}</span>
+                        ${link.note ? `<span class="text-xs text-blue-500 ml-2">(${link.note})</span>` : ''}
                     </a>
                 `);
             } else if (link.note) {
@@ -364,10 +364,10 @@ function updateStatusUI() {
 // ✅ 更新分类激活样式
 function updateCategoryActiveUI(activeCat) {
     document.querySelectorAll('.parent-cat-btn').forEach(el => {
-        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-300 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap parent-cat-btn shadow-sm';
+        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-300 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition whitespace-nowrap parent-cat-btn shadow-sm';
     });
     document.querySelectorAll('.child-cat-btn').forEach(el => {
-        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-500 border border-slate-300 hover:border-violet-400 hover:text-violet-600 hover:bg-violet-50 transition whitespace-nowrap child-cat-btn shadow-sm';
+        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-500 border border-slate-300 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap child-cat-btn shadow-sm';
     });
 
     if (!activeCat) {
@@ -396,13 +396,13 @@ function bindEvents() {
     // 2. 排序切换
     document.getElementById('sort-date').onclick = () => {
         AppState.sortMode = 'date';
-        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
+        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm whitespace-nowrap transition';
         document.getElementById('sort-pinyin').className = 'sort-btn sort-btn-inactive px-3 py-1.5 rounded-md text-xs whitespace-nowrap transition';
         applyFiltersAndRender();
     };
     document.getElementById('sort-pinyin').onclick = () => {
         AppState.sortMode = 'pinyin';
-        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
+        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-sm whitespace-nowrap transition';
         document.getElementById('sort-date').className = 'sort-btn sort-btn-inactive px-3 py-1.5 rounded-md text-xs whitespace-nowrap transition';
         applyFiltersAndRender();
     };
