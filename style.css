@@ -55,3 +55,7 @@
     color: white !important;
     font-weight: 600;
 }
+
+.bg-accent { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+.text-accent { color: #4f46e5; }
+.category-active { background-color: #eef2ff; color: #4f46e5; border-color: #c7d2fe; }
