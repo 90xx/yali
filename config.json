@@ -1,11 +1,11 @@
 {
   "siteName": "YaLi",
-  "announcementUrl": "https://tally.so/r/EkoZvB",
+  "announcementUrl": "https://www.kdocs.cn/l/crOyXHBVm96cB",
   "messageBoardUrl": "https://tally.so/r/EkoZvB",
   "pageSize": 40,
   "statsApiUrl": "https://stats.261512.xyz",
   "dataFiles": [
-    "/data/yali0903.json",
+    "/data/yali0904.json",
     "/data/shuku10825.json"
   ],
   "categoryTree": {
