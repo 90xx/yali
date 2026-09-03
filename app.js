@@ -161,11 +161,11 @@ function renderPage() {
         }
 
         const card = document.createElement('div');
-        card.className = 'resource-card bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:shadow-md hover:border-indigo-200 flex flex-col justify-between transition-all';
+        card.className = 'resource-card flex flex-col justify-between';
         card.innerHTML = `
-            <h3 class="font-semibold text-slate-800 line-clamp-2 mb-2 text-sm leading-snug" title="${item.title}">${item.title}</h3>
+            <h3 class="line-clamp-2 mb-2" title="${item.title}">${item.title}</h3>
             <div class="flex flex-wrap gap-1.5 mt-auto">
-                ${(item.categories || []).slice(0, 2).map(c => `<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md border border-slate-200">${c}</span>`).join('')}
+                ${(item.categories || []).slice(0, 2).map(c => `<span class="card-tag">${c}</span>`).join('')}
             </div>
         `;
         card.onclick = () => showModal(item);
@@ -180,22 +180,20 @@ function renderPagination(totalPages) {
     container.innerHTML = '';
     if (totalPages <= 1) return;
 
-    const btnClass = 'px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-100 hover:border-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed transition';
-    const activeClass = 'bg-gradient-to-r from-indigo-500 to-violet-500 border-transparent text-white shadow-sm hover:shadow-md';
-
-    container.insertAdjacentHTML('beforeend', `<button class="${btnClass}" ${AppState.currentPage === 1 ? 'disabled' : ''} data-page="prev">上一页</button>`);
+    container.insertAdjacentHTML('beforeend', `<button class="page-btn" ${AppState.currentPage === 1 ? 'disabled' : ''} data-page="prev">上一页</button>`);
 
     const pages = new Set([1, totalPages, AppState.currentPage, AppState.currentPage - 1, AppState.currentPage + 1]);
     const sortedPages = [...pages].filter(p => p > 0 && p <= totalPages).sort((a, b) => a - b);
     
     let lastPage = 0;
     sortedPages.forEach(p => {
-        if (p - lastPage > 1) container.insertAdjacentHTML('beforeend', `<span class="px-2 text-slate-400">...</span>`);
-        container.insertAdjacentHTML('beforeend', `<button class="${btnClass} ${p === AppState.currentPage ? activeClass : ''}" data-page="${p}">${p}</button>`);
+        if (p - lastPage > 1) container.insertAdjacentHTML('beforeend', `<span class="px-2 text-slate-400 text-sm">...</span>`);
+        const isActive = p === AppState.currentPage;
+        container.insertAdjacentHTML('beforeend', `<button class="page-btn ${isActive ? 'page-active' : ''}" data-page="${p}">${p}</button>`);
         lastPage = p;
     });
 
-    container.insertAdjacentHTML('beforeend', `<button class="${btnClass}" ${AppState.currentPage === totalPages ? 'disabled' : ''} data-page="next">下一页</button>`);
+    container.insertAdjacentHTML('beforeend', `<button class="page-btn" ${AppState.currentPage === totalPages ? 'disabled' : ''} data-page="next">下一页</button>`);
 }
 
 // ✅ 渲染父分类行
@@ -208,7 +206,7 @@ function renderParentCategories() {
     const tree = AppState.config.categoryTree;
     for (const parent of Object.keys(tree)) {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-500 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition whitespace-nowrap parent-cat-btn';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-600 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap parent-cat-btn';
         btn.dataset.cat = parent;
         btn.textContent = parent;
         bar.appendChild(btn);
@@ -230,7 +228,7 @@ function renderChildCategories(parentName) {
 
     children.forEach(child => {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-400 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition whitespace-nowrap child-cat-btn';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-500 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap child-cat-btn';
         btn.dataset.cat = child;
         btn.textContent = child;
         bar.appendChild(btn);
@@ -314,27 +312,27 @@ function showModal(item) {
     
     const meta = document.getElementById('modal-meta');
     meta.innerHTML = `
-        <span class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-1 rounded-lg">📅 ${item.date}</span>
-        ${(item.categories || []).map(c => `<span class="bg-slate-100 text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg">🏷️ ${c}</span>`).join('')}
+        <span class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-1 rounded-lg font-medium">📅 ${item.date}</span>
+        ${(item.categories || []).map(c => `<span class="bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-lg font-medium">🏷️ ${c}</span>`).join('')}
     `;
 
     const linksContainer = document.getElementById('modal-links');
     linksContainer.innerHTML = '';
     
     if (!item.links || item.links.length === 0) {
-        linksContainer.innerHTML = '<p class="text-slate-400 text-sm">暂无有效链接</p>';
+        linksContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无有效链接</p>';
     } else {
         item.links.forEach(link => {
             if (link.url && link.url.startsWith('http')) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <a href="${link.url}" target="_blank" class="block w-full bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl p-3.5 transition text-center">
+                    <a href="${link.url}" target="_blank" class="block w-full bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow">
                         <span class="font-bold text-indigo-600">🔗 ${link.platform}</span>
-                        ${link.note ? `<span class="text-xs text-slate-400 ml-2">(${link.note})</span>` : ''}
+                        ${link.note ? `<span class="text-xs text-slate-500 ml-2">(${link.note})</span>` : ''}
                     </a>
                 `);
             } else if (link.note) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <div class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-3.5 text-sm text-slate-500">
+                    <div class="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-3.5 text-sm text-slate-600">
                         <span class="font-bold text-slate-700">📌 ${link.platform} 备注:</span> ${link.note}
                     </div>
                 `);
@@ -356,13 +354,12 @@ function updateStatusUI() {
 
 // ✅ 更新分类激活样式
 function updateCategoryActiveUI(activeCat) {
-    document.querySelectorAll('.parent-cat-btn, .child-cat-btn, #btn-reset-category').forEach(el => {
-        el.classList.remove('category-active');
-        // 恢复默认浅色态
-        if (el.classList.contains('parent-cat-btn') || el.classList.contains('child-cat-btn')) {
-            el.classList.remove('text-indigo-600', 'bg-indigo-50', 'border-indigo-200');
-            el.classList.add('text-slate-500', 'bg-slate-50', 'border-slate-200');
-        }
+    // 重置所有分类按钮为默认态
+    document.querySelectorAll('.parent-cat-btn').forEach(el => {
+        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-600 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap parent-cat-btn';
+    });
+    document.querySelectorAll('.child-cat-btn').forEach(el => {
+        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-500 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap child-cat-btn';
     });
 
     if (!activeCat) {
@@ -373,7 +370,6 @@ function updateCategoryActiveUI(activeCat) {
 
     const matched = document.querySelector(`[data-cat="${activeCat}"]`);
     if (matched) {
-        matched.classList.remove('text-slate-500', 'text-slate-400', 'bg-slate-50', 'border-slate-200');
         matched.classList.add('category-active');
     }
 }
@@ -390,16 +386,16 @@ function bindEvents() {
     });
 
     // 2. 排序切换
-    document.getElementById('sort-date').onclick = (e) => {
+    document.getElementById('sort-date').onclick = () => {
         AppState.sortMode = 'date';
         document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
-        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap transition';
+        document.getElementById('sort-pinyin').className = 'sort-btn sort-btn-inactive px-3 py-1.5 rounded-md text-xs whitespace-nowrap transition';
         applyFiltersAndRender();
     };
-    document.getElementById('sort-pinyin').onclick = (e) => {
+    document.getElementById('sort-pinyin').onclick = () => {
         AppState.sortMode = 'pinyin';
         document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
-        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap transition';
+        document.getElementById('sort-date').className = 'sort-btn sort-btn-inactive px-3 py-1.5 rounded-md text-xs whitespace-nowrap transition';
         applyFiltersAndRender();
     };
 
