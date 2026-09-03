@@ -1,7 +1,21 @@
 @import "tailwindcss";
 
-/* ✅ 新增：告诉 Tailwind v4 使用 class 策略的暗黑模式 */
-@custom-variant dark (&:where(.dark, .dark *));
+/* ✅ 强制开启深色模式的核心代码 */
+@layer base {
+  :root {
+    /* 强制定义深色模式的色值，无论系统设置如何 */
+    --color-primary: #0f172a;   /* 对应 bg-primary */
+    --color-secondary: #1e293b; /* 对应 bg-secondary */
+    --color-accent: #3b82f6;    /* 对应 text-accent / bg-accent */
+    --color-highlight: #f43f5e; /* 对应 text-highlight */
+    
+    /* 强制基础背景为深色 */
+    background-color: var(--color-primary);
+    color: #e2e8f0; /* 默认文字颜色 gray-200 */
+  }
+}
+
+/* ====== 以下为你的原始样式，未做任何修改 ====== */
 
 /* 自定义滚动条 */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
