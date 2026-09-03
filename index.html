@@ -6,92 +6,102 @@
     <title>内部网盘资源库</title>
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
     <link rel="stylesheet" href="dist/style.css">
+    <style>
+        /* ✅ 新增：现代风格自定义CSS变量与基础样式 */
+        :root {
+            --bg-base: #0b0f19;
+            --bg-surface: rgba(30, 41, 59, 0.6);
+            --border-subtle: rgba(148, 163, 184, 0.12);
+            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+        }
+        body { background-color: var(--bg-base); }
+        
+        @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #accessModal input:focus { border-color: #8b5cf6 !important; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
+        #accessLink:hover { filter: brightness(1.1); }
+        #verifyBtn:hover { filter: brightness(1.1); }
+        
+        /* 隐藏滚动条但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body class="bg-primary text-gray-200 min-h-screen flex flex-col">
+<body class="text-gray-300 min-h-screen flex flex-col selection:bg-indigo-500/30">
 
     <!-- 🛡️ 访问验证模态框 -->
-    <div id="accessModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
-        <div style="background:#1e293b; border:1px solid #334155; border-radius:16px; padding:2rem; max-width:400px; width:calc(100% - 2rem); box-shadow:0 20px 60px rgba(0,0,0,0.5); animation:modalIn 0.3s ease;">
-            <div style="font-size:1.25rem; font-weight:700; color:#f8fafc; text-align:center; margin-bottom:1.5rem;">🔒 请输入访问码继续</div>
-            <a id="accessLink" href="#" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; width:100%; padding:0.75rem; background:#3b82f6; color:#fff; border-radius:10px; font-weight:700; text-decoration:none; margin-bottom:1.5rem; transition:background 0.2s;">
+    <div id="accessModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(12px);">
+        <div style="background:rgba(30, 41, 59, 0.9); border:1px solid var(--border-subtle); border-radius:20px; padding:2.5rem; max-width:400px; width:calc(100% - 2rem); box-shadow:0 25px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05); animation:modalIn 0.3s ease;">
+            <div style="font-size:1.3rem; font-weight:700; color:#f8fafc; text-align:center; margin-bottom:1.75rem; letter-spacing:-0.02em;">🔒 安全验证</div>
+            <a id="accessLink" href="#" target="_blank" rel="noopener noreferrer" style="display:flex; align-items:center; justify-content:center; width:100%; padding:0.85rem; background:var(--accent-gradient); color:#fff; border-radius:12px; font-weight:600; text-decoration:none; margin-bottom:1.5rem; transition:all 0.2s; box-shadow:0 4px 15px rgba(99, 102, 241, 0.3);">
                 <span style="margin-right:0.5rem;">👉</span> 点击获取 <span id="linkDate" style="margin-left:0.25rem;"></span> 访问码
             </a>
-            <label for="accessCodeInput" style="display:block; font-size:0.875rem; color:#94a3b8; margin-bottom:0.5rem; font-weight:600;">请输入访问码：</label>
-            <input id="accessCodeInput" type="text" placeholder="请输入访问码" maxlength="15" autocomplete="off" style="width:100%; padding:0.75rem 1rem; border:2px solid #334155; border-radius:10px; font-size:1rem; outline:none; background:#0f172a; color:#fff; box-sizing:border-box;" />
-            <button id="verifyBtn" style="width:100%; padding:0.85rem; background:#22c55e; color:#fff; border:none; border-radius:10px; font-size:1.1rem; font-weight:700; cursor:pointer; margin-top:1rem;">✅ 验证访问码</button>
-            <div id="errorText" style="color:#ef4444; font-size:0.875rem; text-align:center; margin-top:1rem; font-weight:600; display:none;"></div>
+            <label for="accessCodeInput" style="display:block; font-size:0.8rem; color:#94a3b8; margin-bottom:0.5rem; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">ACCESS CODE</label>
+            <input id="accessCodeInput" type="text" placeholder="请输入访问码" maxlength="15" autocomplete="off" style="width:100%; padding:0.85rem 1rem; border:1px solid var(--border-subtle); border-radius:12px; font-size:1rem; outline:none; background:rgba(15, 23, 42, 0.8); color:#fff; box-sizing:border-box; transition:all 0.2s;" />
+            <button id="verifyBtn" style="width:100%; padding:0.9rem; background:#10b981; color:#fff; border:none; border-radius:12px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:1rem; transition:all 0.2s; box-shadow:0 4px 15px rgba(16, 185, 129, 0.25);">✅ 验证并进入</button>
+            <div id="errorText" style="color:#f43f5e; font-size:0.85rem; text-align:center; margin-top:1rem; font-weight:500; display:none;"></div>
         </div>
     </div>
-    <style>
-        @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        #accessModal input:focus { border-color: #3b82f6 !important; }
-        #accessModal input.input-error { border-color: #ef4444 !important; }
-        #accessModal .error-msg.show { display: block !important; }
-        #accessLink:hover { background: #2563eb; }
-        #verifyBtn:hover { background: #16a34a; }
-    </style>
 
-    <!-- ✅ 顶栏：四行纵向布局（含分类导航） -->
-    <header class="bg-secondary border-b border-gray-700 px-3 pt-3 pb-2 md:p-4 sticky top-0 z-50 shadow-lg flex flex-col gap-2">
-        <!-- 第一行：标题居中 + 右侧胶囊按钮 -->
+    <!-- ✅ 顶栏：现代玻璃拟态风格 -->
+    <header class="backdrop-blur-xl bg-slate-900/80 border-b border-white/[0.06] px-4 pt-3 pb-2 md:p-4 sticky top-0 z-50 flex flex-col gap-2.5">
+        <!-- 第一行：标题 + 胶囊按钮 -->
         <div class="flex items-center justify-between w-full">
             <div class="w-16 md:hidden"></div>
-            <h1 id="site-title" class="text-lg md:text-xl font-bold text-white text-center flex-1">资源库</h1>
+            <h1 id="site-title" class="text-lg md:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400 text-center flex-1 tracking-tight">资源库</h1>
             <div class="flex gap-2 shrink-0">
                 <a id="btn-announcement" href="#" target="_blank" 
-                   class="px-2.5 py-0.5 rounded-full bg-gray-800 border border-gray-600 text-xs text-gray-300 hover:text-accent hover:border-accent transition whitespace-nowrap">
+                   class="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-slate-300 hover:text-white hover:bg-white/[0.1] hover:border-indigo-500/50 transition-all whitespace-nowrap">
                     📢 必看
                 </a>
                 <a id="btn-message-board" href="#" target="_blank" 
-                   class="px-2.5 py-0.5 rounded-full bg-gray-800 border border-gray-600 text-xs text-gray-300 hover:text-accent hover:border-accent transition whitespace-nowrap">
+                   class="px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.08] text-xs text-slate-300 hover:text-white hover:bg-white/[0.1] hover:border-indigo-500/50 transition-all whitespace-nowrap">
                     💬 留言
                 </a>
             </div>
         </div>
 
-        <!-- 第二行：搜索栏独占一行 -->
+        <!-- 第二行：搜索栏 -->
         <div class="w-full">
             <input type="text" id="search-input" placeholder="🔍 搜索资源名称..." 
-                   class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-accent text-sm">
+                   class="w-full bg-black/20 border border-white/[0.08] rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 text-sm text-white placeholder-slate-500 transition-all">
         </div>
 
-        <!-- ✅ 第三行：双层分类导航（原独立 nav 移入此处） -->
+        <!-- 第三行：分类导航 -->
         <div class="w-full">
-            <div class="flex items-center gap-1.5 md:gap-2 overflow-x-auto no-scrollbar py-1.5" id="parent-category-bar">
-                <button id="btn-reset-category" class="shrink-0 px-3 py-1.5 rounded-full text-xs md:text-sm font-medium text-accent hover:bg-gray-700 transition category-active whitespace-nowrap">📂 全部</button>
-                <!-- JS 动态渲染父分类 -->
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1" id="parent-category-bar">
+                <button id="btn-reset-category" class="shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 hover:bg-indigo-500/25 transition category-active whitespace-nowrap">📂 全部</button>
             </div>
-            <div class="flex items-center gap-1.5 md:gap-2 overflow-x-auto no-scrollbar py-1.5 hidden" id="child-category-bar">
-                <!-- JS 动态渲染子分类 -->
-            </div>
+            <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 hidden" id="child-category-bar"></div>
         </div>
 
-        <!-- 第四行：排序按钮靠左 + 结果数量靠右 -->
+        <!-- 第四行：排序 + 数量 -->
         <div class="flex items-center justify-between w-full pt-0.5">
-            <div class="flex bg-gray-800 rounded-lg p-0.5">
-                <button id="sort-date" class="px-3 py-1 rounded text-xs font-medium bg-accent text-white whitespace-nowrap transition">按时间</button>
-                <button id="sort-pinyin" class="px-3 py-1 rounded text-xs font-medium text-gray-400 hover:text-white whitespace-nowrap transition">按名称</button>
+            <div class="flex bg-black/20 rounded-lg p-0.5 border border-white/[0.06]">
+                <button id="sort-date" class="px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition">按时间</button>
+                <button id="sort-pinyin" class="px-3 py-1.5 rounded-md text-xs font-medium text-slate-400 hover:text-white whitespace-nowrap transition">按名称</button>
             </div>
-            <span class="text-xs text-gray-400">共 <span id="total-count" class="text-accent font-bold">0</span> 条</span>
+            <span class="text-xs text-slate-500 font-medium">共 <span id="total-count" class="text-indigo-400 font-bold">0</span> 条</span>
         </div>
     </header>
 
     <div class="flex flex-1 overflow-hidden">
-        <main class="flex-1 p-6 overflow-y-auto" id="main-content">
+        <main class="flex-1 p-4 md:p-6 overflow-y-auto" id="main-content">
             <div id="card-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8"></div>
             <div id="pagination" class="flex justify-center items-center gap-2 mt-8 mb-12"></div>
 
-            <section class="mt-12 border-t border-gray-700 pt-8">
-                <h3 class="text-lg font-bold mb-4 text-gray-300">📊 统计</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-secondary p-4 rounded-lg border border-gray-700">
-                        <div class="text-gray-400 text-sm">今日访问</div>
-                        <div id="stat-today-views" class="text-2xl font-bold text-white mt-1">加载中...</div>
+            <section class="mt-12 border-t border-white/[0.06] pt-8">
+                <h3 class="text-lg font-bold mb-4 text-slate-200 tracking-tight">📊 数据统计</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white/[0.03] p-5 rounded-2xl border border-white/[0.06] hover:border-white/[0.1] transition">
+                        <div class="text-slate-500 text-xs font-medium uppercase tracking-wider">今日访问</div>
+                        <div id="stat-today-views" class="text-3xl font-bold text-white mt-2 tracking-tight">加载中...</div>
                     </div>
-                    <div class="bg-secondary p-4 rounded-lg border border-gray-700">
-                        <div class="text-gray-400 text-sm">热度排行 Top 5</div>
-                        <ul id="stat-top-resources" class="text-sm text-gray-300 mt-2 space-y-1">
-                            <li class="text-gray-500">加载中...</li>
+                    <div class="bg-white/[0.03] p-5 rounded-2xl border border-white/[0.06] hover:border-white/[0.1] transition md:col-span-2">
+                        <div class="text-slate-500 text-xs font-medium uppercase tracking-wider">热度排行 TOP 5</div>
+                        <ul id="stat-top-resources" class="text-sm text-slate-300 mt-3 space-y-2">
+                            <li class="text-slate-600">加载中...</li>
                         </ul>
                     </div>
                 </div>
@@ -100,11 +110,11 @@
     </div>
 
     <!-- 详情弹窗 -->
-    <div id="modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden z-[100] flex items-center justify-center p-4">
-        <div class="bg-secondary w-full max-w-lg rounded-xl shadow-2xl border border-gray-700 overflow-hidden transform transition-all">
-            <div class="p-6 border-b border-gray-700 flex justify-between items-start">
-                <h2 id="modal-title" class="text-xl font-bold text-white pr-4"></h2>
-                <button id="modal-close" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-slate-900/95 w-full max-w-lg rounded-2xl shadow-2xl border border-white/[0.08] overflow-hidden transform transition-all">
+            <div class="p-6 border-b border-white/[0.06] flex justify-between items-start">
+                <h2 id="modal-title" class="text-xl font-bold text-white pr-4 tracking-tight"></h2>
+                <button id="modal-close" class="text-slate-500 hover:text-white text-2xl leading-none transition">&times;</button>
             </div>
             <div class="p-6">
                 <div id="modal-meta" class="flex flex-wrap gap-2 mb-4 text-xs"></div>
