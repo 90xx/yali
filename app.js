@@ -136,7 +136,7 @@ function renderPage() {
     const pageData = AppState.filteredData.slice(startIdx, endIdx);
 
     if (pageData.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-20 text-gray-500 text-lg">🔍 没有找到匹配的资源</div>';
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400 text-lg">🔍 没有找到匹配的资源</div>';
         renderPagination(0);
         return;
     }
@@ -161,11 +161,11 @@ function renderPage() {
         }
 
         const card = document.createElement('div');
-        card.className = 'resource-card bg-secondary border border-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-800 flex flex-col justify-between';
+        card.className = 'resource-card bg-white border border-slate-200 rounded-xl p-4 cursor-pointer hover:shadow-md hover:border-indigo-200 flex flex-col justify-between transition-all';
         card.innerHTML = `
-            <h3 class="font-medium text-gray-200 line-clamp-2 mb-2" title="${item.title}">${item.title}</h3>
-            <div class="flex flex-wrap gap-1 mt-auto">
-                ${(item.categories || []).slice(0, 2).map(c => `<span class="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded">${c}</span>`).join('')}
+            <h3 class="font-semibold text-slate-800 line-clamp-2 mb-2 text-sm leading-snug" title="${item.title}">${item.title}</h3>
+            <div class="flex flex-wrap gap-1.5 mt-auto">
+                ${(item.categories || []).slice(0, 2).map(c => `<span class="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-md border border-slate-200">${c}</span>`).join('')}
             </div>
         `;
         card.onclick = () => showModal(item);
@@ -180,8 +180,8 @@ function renderPagination(totalPages) {
     container.innerHTML = '';
     if (totalPages <= 1) return;
 
-    const btnClass = 'px-3 py-1 rounded border border-gray-600 text-sm hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed';
-    const activeClass = 'bg-accent border-accent text-white hover:bg-blue-600';
+    const btnClass = 'px-3 py-1.5 rounded-lg border border-slate-200 text-sm text-slate-600 hover:bg-slate-100 hover:border-indigo-200 disabled:opacity-40 disabled:cursor-not-allowed transition';
+    const activeClass = 'bg-gradient-to-r from-indigo-500 to-violet-500 border-transparent text-white shadow-sm hover:shadow-md';
 
     container.insertAdjacentHTML('beforeend', `<button class="${btnClass}" ${AppState.currentPage === 1 ? 'disabled' : ''} data-page="prev">上一页</button>`);
 
@@ -190,7 +190,7 @@ function renderPagination(totalPages) {
     
     let lastPage = 0;
     sortedPages.forEach(p => {
-        if (p - lastPage > 1) container.insertAdjacentHTML('beforeend', `<span class="px-2 text-gray-500">...</span>`);
+        if (p - lastPage > 1) container.insertAdjacentHTML('beforeend', `<span class="px-2 text-slate-400">...</span>`);
         container.insertAdjacentHTML('beforeend', `<button class="${btnClass} ${p === AppState.currentPage ? activeClass : ''}" data-page="${p}">${p}</button>`);
         lastPage = p;
     });
@@ -208,7 +208,7 @@ function renderParentCategories() {
     const tree = AppState.config.categoryTree;
     for (const parent of Object.keys(tree)) {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3 py-1.5 rounded text-sm font-medium text-gray-300 hover:bg-gray-700 hover:text-white transition whitespace-nowrap parent-cat-btn';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-500 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition whitespace-nowrap parent-cat-btn';
         btn.dataset.cat = parent;
         btn.textContent = parent;
         bar.appendChild(btn);
@@ -230,7 +230,7 @@ function renderChildCategories(parentName) {
 
     children.forEach(child => {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3 py-1.5 rounded text-sm font-medium text-gray-400 hover:bg-gray-700 hover:text-white transition whitespace-nowrap child-cat-btn';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium text-slate-400 bg-slate-50 border border-slate-200 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition whitespace-nowrap child-cat-btn';
         btn.dataset.cat = child;
         btn.textContent = child;
         bar.appendChild(btn);
@@ -268,13 +268,13 @@ const StatsManager = {
                     data.topResources.forEach((item, index) => {
                         topList.insertAdjacentHTML('beforeend', `
                             <li class="flex justify-between items-center">
-                                <span class="truncate mr-2" title="${item.title}">${index + 1}. ${item.title}</span>
-                                <span class="text-accent font-mono text-xs">${item.count}</span>
+                                <span class="truncate mr-2 text-slate-600" title="${item.title}">${index + 1}. ${item.title}</span>
+                                <span class="text-indigo-600 font-mono text-xs font-bold">${item.count}</span>
                             </li>
                         `);
                     });
                 } else {
-                    topList.innerHTML = '<li class="text-gray-500">暂无数据</li>';
+                    topList.innerHTML = '<li class="text-slate-400">暂无数据</li>';
                 }
             }
         } catch (err) {
@@ -314,28 +314,28 @@ function showModal(item) {
     
     const meta = document.getElementById('modal-meta');
     meta.innerHTML = `
-        <span class="bg-blue-900/50 text-blue-300 px-2 py-1 rounded">📅 ${item.date}</span>
-        ${(item.categories || []).map(c => `<span class="bg-gray-700 text-gray-300 px-2 py-1 rounded">🏷️ ${c}</span>`).join('')}
+        <span class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-1 rounded-lg">📅 ${item.date}</span>
+        ${(item.categories || []).map(c => `<span class="bg-slate-100 text-slate-500 border border-slate-200 px-2.5 py-1 rounded-lg">🏷️ ${c}</span>`).join('')}
     `;
 
     const linksContainer = document.getElementById('modal-links');
     linksContainer.innerHTML = '';
     
     if (!item.links || item.links.length === 0) {
-        linksContainer.innerHTML = '<p class="text-gray-500 text-sm">暂无有效链接</p>';
+        linksContainer.innerHTML = '<p class="text-slate-400 text-sm">暂无有效链接</p>';
     } else {
         item.links.forEach(link => {
             if (link.url && link.url.startsWith('http')) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <a href="${link.url}" target="_blank" class="block w-full bg-gray-800 hover:bg-gray-700 border border-gray-600 rounded-lg p-3 transition text-center">
-                        <span class="font-bold text-accent">🔗 ${link.platform}</span>
-                        ${link.note ? `<span class="text-xs text-gray-400 ml-2">(${link.note})</span>` : ''}
+                    <a href="${link.url}" target="_blank" class="block w-full bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl p-3.5 transition text-center">
+                        <span class="font-bold text-indigo-600">🔗 ${link.platform}</span>
+                        ${link.note ? `<span class="text-xs text-slate-400 ml-2">(${link.note})</span>` : ''}
                     </a>
                 `);
             } else if (link.note) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <div class="bg-gray-800/50 border border-dashed border-gray-600 rounded-lg p-3 text-sm text-gray-400">
-                        <span class="font-bold text-gray-300">📌 ${link.platform} 备注:</span> ${link.note}
+                    <div class="bg-slate-50 border border-dashed border-slate-200 rounded-xl p-3.5 text-sm text-slate-500">
+                        <span class="font-bold text-slate-700">📌 ${link.platform} 备注:</span> ${link.note}
                     </div>
                 `);
             }
@@ -356,24 +356,24 @@ function updateStatusUI() {
 
 // ✅ 更新分类激活样式
 function updateCategoryActiveUI(activeCat) {
-    // 清除所有激活状态
     document.querySelectorAll('.parent-cat-btn, .child-cat-btn, #btn-reset-category').forEach(el => {
-        el.classList.remove('category-active', 'bg-accent', 'text-white');
-        if (el.classList.contains('parent-cat-btn')) el.classList.add('text-gray-300');
-        else if (el.classList.contains('child-cat-btn')) el.classList.add('text-gray-400');
-        else el.classList.add('text-accent');
+        el.classList.remove('category-active');
+        // 恢复默认浅色态
+        if (el.classList.contains('parent-cat-btn') || el.classList.contains('child-cat-btn')) {
+            el.classList.remove('text-indigo-600', 'bg-indigo-50', 'border-indigo-200');
+            el.classList.add('text-slate-500', 'bg-slate-50', 'border-slate-200');
+        }
     });
 
     if (!activeCat) {
         const resetBtn = document.getElementById('btn-reset-category');
-        resetBtn.classList.remove('text-accent');
         resetBtn.classList.add('category-active');
         return;
     }
 
     const matched = document.querySelector(`[data-cat="${activeCat}"]`);
     if (matched) {
-        matched.classList.remove('text-gray-300', 'text-gray-400');
+        matched.classList.remove('text-slate-500', 'text-slate-400', 'bg-slate-50', 'border-slate-200');
         matched.classList.add('category-active');
     }
 }
@@ -392,14 +392,14 @@ function bindEvents() {
     // 2. 排序切换
     document.getElementById('sort-date').onclick = (e) => {
         AppState.sortMode = 'date';
-        e.target.classList.add('bg-accent', 'text-white');
-        document.getElementById('sort-pinyin').classList.remove('bg-accent', 'text-white');
+        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
+        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap transition';
         applyFiltersAndRender();
     };
     document.getElementById('sort-pinyin').onclick = (e) => {
         AppState.sortMode = 'pinyin';
-        e.target.classList.add('bg-accent', 'text-white');
-        document.getElementById('sort-date').classList.remove('bg-accent', 'text-white');
+        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
+        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium text-slate-500 hover:text-slate-800 whitespace-nowrap transition';
         applyFiltersAndRender();
     };
 
@@ -413,9 +413,7 @@ function bindEvents() {
         AppState.searchQuery = '';
         document.getElementById('search-input').value = '';
 
-        // 高亮父分类
         updateCategoryActiveUI(cat);
-        // 展开对应子分类行
         renderChildCategories(cat);
         applyFiltersAndRender();
     });
@@ -440,7 +438,6 @@ function bindEvents() {
         AppState.searchQuery = '';
         document.getElementById('search-input').value = '';
         updateCategoryActiveUI(null);
-        // 隐藏子分类行
         document.getElementById('child-category-bar').classList.add('hidden');
         document.getElementById('child-category-bar').innerHTML = '';
         applyFiltersAndRender();
