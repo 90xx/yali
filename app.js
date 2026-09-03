@@ -1,3 +1,4 @@
+
 // ================= 状态管理 =================
 const AppState = {
     allData: [],
@@ -125,6 +126,14 @@ function applyFiltersAndRender() {
     renderPage();
 }
 
+// ================= 标签颜色映射（少女粉主题） =================
+const TAG_COLORS = ['tag-rose', 'tag-pink', 'tag-amber', 'tag-sky', 'tag-lavender', 'tag-mint'];
+function getTagColorClass(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
+}
+
 // ================= 渲染逻辑 =================
 function renderPage() {
     const grid = document.getElementById('card-grid');
@@ -136,14 +145,14 @@ function renderPage() {
     const pageData = AppState.filteredData.slice(startIdx, endIdx);
 
     if (pageData.length === 0) {
-        grid.innerHTML = '<div class="col-span-full text-center py-20 text-slate-400 text-lg">🔍 没有找到匹配的资源</div>';
+        grid.innerHTML = '<div class="col-span-full text-center py-20 text-pink-300 text-lg">🔍 没有找到匹配的资源</div>';
         renderPagination(0);
         return;
     }
 
     let lastGroupLabel = '';
 
-    pageData.forEach(item => {
+    pageData.forEach((item, index) => {
         let currentLabel = '';
         if (AppState.sortMode === 'date') {
             currentLabel = item.date || '未知日期';
@@ -162,11 +171,13 @@ function renderPage() {
 
         const card = document.createElement('div');
         card.className = 'resource-card flex flex-col justify-between';
+        card.style.setProperty('--i', index);
+        const tags = (item.categories || []).slice(0, 2).map(c => 
+            `<span class="card-tag ${getTagColorClass(c)}">${c}</span>`
+        ).join('');
         card.innerHTML = `
-            <h3 class="line-clamp-2 mb-2" title="${item.title}">${item.title}</h3>
-            <div class="flex flex-wrap gap-1.5 mt-auto">
-                ${(item.categories || []).slice(0, 2).map(c => `<span class="card-tag">${c}</span>`).join('')}
-            </div>
+            <h3 class="line-clamp-2 mb-3" title="${item.title}">${item.title}</h3>
+            <div class="flex flex-wrap gap-1.5 mt-auto">${tags}</div>
         `;
         card.onclick = () => showModal(item);
         grid.appendChild(card);
@@ -187,7 +198,7 @@ function renderPagination(totalPages) {
     
     let lastPage = 0;
     sortedPages.forEach(p => {
-        if (p - lastPage > 1) container.insertAdjacentHTML('beforeend', `<span class="px-2 text-slate-400 text-sm">...</span>`);
+        if (p - lastPage > 1) container.insertAdjacentHTML('beforeend', `<span class="px-2 text-pink-300 text-sm font-medium">...</span>`);
         const isActive = p === AppState.currentPage;
         container.insertAdjacentHTML('beforeend', `<button class="page-btn ${isActive ? 'page-active' : ''}" data-page="${p}">${p}</button>`);
         lastPage = p;
@@ -206,7 +217,7 @@ function renderParentCategories() {
     const tree = AppState.config.categoryTree;
     for (const parent of Object.keys(tree)) {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-600 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap parent-cat-btn';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-pink-600 border border-pink-200 hover:border-pink-400 hover:text-pink-700 hover:bg-pink-50 transition whitespace-nowrap parent-cat-btn';
         btn.dataset.cat = parent;
         btn.textContent = parent;
         bar.appendChild(btn);
@@ -228,7 +239,7 @@ function renderChildCategories(parentName) {
 
     children.forEach(child => {
         const btn = document.createElement('button');
-        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-500 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap child-cat-btn';
+        btn.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-pink-500 border border-pink-200 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50 transition whitespace-nowrap child-cat-btn';
         btn.dataset.cat = child;
         btn.textContent = child;
         bar.appendChild(btn);
@@ -266,13 +277,13 @@ const StatsManager = {
                     data.topResources.forEach((item, index) => {
                         topList.insertAdjacentHTML('beforeend', `
                             <li class="flex justify-between items-center">
-                                <span class="truncate mr-2 text-slate-600" title="${item.title}">${index + 1}. ${item.title}</span>
-                                <span class="text-indigo-600 font-mono text-xs font-bold">${item.count}</span>
+                                <span class="truncate mr-2 text-pink-600 font-medium" title="${item.title}">${index + 1}. ${item.title}</span>
+                                <span class="text-pink-600 font-mono text-xs font-bold bg-pink-50 px-2 py-0.5 rounded">${item.count}</span>
                             </li>
                         `);
                     });
                 } else {
-                    topList.innerHTML = '<li class="text-slate-400">暂无数据</li>';
+                    topList.innerHTML = '<li class="text-pink-400">暂无数据</li>';
                 }
             }
         } catch (err) {
@@ -312,28 +323,28 @@ function showModal(item) {
     
     const meta = document.getElementById('modal-meta');
     meta.innerHTML = `
-        <span class="bg-indigo-50 text-indigo-600 border border-indigo-200 px-2.5 py-1 rounded-lg font-medium">📅 ${item.date}</span>
-        ${(item.categories || []).map(c => `<span class="bg-slate-100 text-slate-600 border border-slate-200 px-2.5 py-1 rounded-lg font-medium">🏷️ ${c}</span>`).join('')}
+        <span class="bg-pink-100 text-pink-700 border border-pink-200 px-2.5 py-1 rounded-lg font-medium">📅 ${item.date}</span>
+        ${(item.categories || []).map(c => `<span class="bg-rose-100 text-rose-700 border border-rose-200 px-2.5 py-1 rounded-lg font-medium">🏷️ ${c}</span>`).join('')}
     `;
 
     const linksContainer = document.getElementById('modal-links');
     linksContainer.innerHTML = '';
     
     if (!item.links || item.links.length === 0) {
-        linksContainer.innerHTML = '<p class="text-slate-400 text-sm text-center py-4">暂无有效链接</p>';
+        linksContainer.innerHTML = '<p class="text-pink-300 text-sm text-center py-4">暂无有效链接</p>';
     } else {
         item.links.forEach(link => {
             if (link.url && link.url.startsWith('http')) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <a href="${link.url}" target="_blank" class="block w-full bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow">
-                        <span class="font-bold text-indigo-600">🔗 ${link.platform}</span>
-                        ${link.note ? `<span class="text-xs text-slate-500 ml-2">(${link.note})</span>` : ''}
+                    <a href="${link.url}" target="_blank" class="block w-full bg-pink-50 hover:bg-pink-100 border border-pink-200 hover:border-pink-400 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow-md">
+                        <span class="font-bold text-pink-600 text-sm">🔗 ${link.platform}</span>
+                        ${link.note ? `<span class="text-xs text-pink-500 ml-2">(${link.note})</span>` : ''}
                     </a>
                 `);
             } else if (link.note) {
                 linksContainer.insertAdjacentHTML('beforeend', `
-                    <div class="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-3.5 text-sm text-slate-600">
-                        <span class="font-bold text-slate-700">📌 ${link.platform} 备注:</span> ${link.note}
+                    <div class="bg-pink-50 border border-dashed border-pink-300 rounded-xl p-3.5 text-sm text-pink-600">
+                        <span class="font-bold text-pink-700">📌 ${link.platform} 备注:</span> ${link.note}
                     </div>
                 `);
             }
@@ -356,10 +367,10 @@ function updateStatusUI() {
 function updateCategoryActiveUI(activeCat) {
     // 重置所有分类按钮为默认态
     document.querySelectorAll('.parent-cat-btn').forEach(el => {
-        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-600 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap parent-cat-btn';
+        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-pink-600 border border-pink-200 hover:border-pink-400 hover:text-pink-700 hover:bg-pink-50 transition whitespace-nowrap parent-cat-btn';
     });
     document.querySelectorAll('.child-cat-btn').forEach(el => {
-        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-slate-500 border border-slate-300 hover:border-indigo-300 hover:text-indigo-600 hover:bg-indigo-50 transition whitespace-nowrap child-cat-btn';
+        el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-pink-500 border border-pink-200 hover:border-rose-400 hover:text-rose-600 hover:bg-rose-50 transition whitespace-nowrap child-cat-btn';
     });
 
     if (!activeCat) {
@@ -388,13 +399,13 @@ function bindEvents() {
     // 2. 排序切换
     document.getElementById('sort-date').onclick = () => {
         AppState.sortMode = 'date';
-        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
+        document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm whitespace-nowrap transition';
         document.getElementById('sort-pinyin').className = 'sort-btn sort-btn-inactive px-3 py-1.5 rounded-md text-xs whitespace-nowrap transition';
         applyFiltersAndRender();
     };
     document.getElementById('sort-pinyin').onclick = () => {
         AppState.sortMode = 'pinyin';
-        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow-sm whitespace-nowrap transition';
+        document.getElementById('sort-pinyin').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-medium bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm whitespace-nowrap transition';
         document.getElementById('sort-date').className = 'sort-btn sort-btn-inactive px-3 py-1.5 rounded-md text-xs whitespace-nowrap transition';
         applyFiltersAndRender();
     };
