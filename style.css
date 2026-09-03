@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* ✅ 新增：告诉 Tailwind v4 使用 class 策略的暗黑模式 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 自定义滚动条 */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: #0f172a; }
