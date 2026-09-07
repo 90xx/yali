@@ -21,6 +21,13 @@ window.initResourceSite = async function() {
         
         document.getElementById('site-title').textContent = AppState.config.siteName;
         document.getElementById('btn-message-board').href = AppState.config.messageBoardUrl;
+       
+          // ✅ 绑定取码教程链接
+        const tutorialBtn = document.getElementById('btn-tutorial');
+        if (tutorialBtn && AppState.config.tutorialUrl) {
+            tutorialBtn.href = AppState.config.tutorialUrl;
+        }
+
         const announceBtn = document.getElementById('btn-announcement');
         if (announceBtn) {
             if (AppState.config.announcementUrl) {
