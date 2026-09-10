@@ -6,7 +6,7 @@
   "pageSize": 40,
   "statsApiUrl": "https://stats.261512.xyz",
   "dataFiles": [
-    "/data/yali0910.json",
+    "/data/yali0911.json",
     "/data/shuku10825.json"
   ],
   "categoryTree": {
@@ -24,6 +24,9 @@
     },
     "韩漫广播剧": {
       "children": ["韩漫广播剧", "韩抓中字"]
+    },
+       "台漫": {
+      "children": ["台漫"]
     },
     "合集": {
       "children": ["合集", "漫画合集（作者）", "韩漫小说合集", "完结漫合集（月份）"]
