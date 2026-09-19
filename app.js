@@ -1,18 +1,18 @@
-// ✅ 添加到 app.js 顶部，与 Worker 端的 getTodayStr() 逻辑保持一致
-function getBeijingDate() {
-  const now = new Date(Date.now() + 8 * 3600000);
-  return now.toISOString().split('T')[0];
-}
-// 统一统计请求，自动带 X-Site-Host，后续调用完全无感
+// ✅ FIX 1: 删除重复的 getBeijingDate，统一使用 utils.js 中的 window.getBeijingDate
+// （不再在此文件定义，避免与 utils.js 冲突）
+
+// ✅ FIX 2: statsFetch 改用 AppState.config（而非不存在的全局 config）
 async function statsFetch(path, options = {}) {
-  const url = `${config.statsApiUrl}${path}`;
+  const baseUrl = AppState.config?.statsApiUrl || '';
+  if (!baseUrl) throw new Error('statsApiUrl 未配置');
+  const url = `${baseUrl}${path}`;
   const headers = {
     'X-Site-Host': window.location.hostname,
     ...(options.headers || {})
   };
-  
   return fetch(url, { ...options, headers });
 }
+
 // ================= 状态管理 =================
 const AppState = {
     allData: [],
@@ -31,12 +31,12 @@ window.initResourceSite = async function() {
 
     try {
         const configRes = await fetch('config.json');
+        if (!configRes.ok) throw new Error(`config.json 请求失败 (HTTP ${configRes.status})`); // ✅ FIX 3: 增加 config 请求状态检查
         AppState.config = await configRes.json();
         
         document.getElementById('site-title').textContent = AppState.config.siteName;
         document.getElementById('btn-message-board').href = AppState.config.messageBoardUrl;
        
-          // ✅ 绑定取码教程链接
         const tutorialBtn = document.getElementById('btn-tutorial');
         if (tutorialBtn && AppState.config.tutorialUrl) {
             tutorialBtn.href = AppState.config.tutorialUrl;
@@ -65,9 +65,14 @@ window.initResourceSite = async function() {
         StatsManager.init(AppState.config);
 
     } catch (error) {
+        // ✅ FIX 4: 打印详细错误信息到页面，方便定位
         console.error("❌ 站点初始化失败:", error);
+        console.error("📍 堆栈:", error.stack);
         const grid = document.getElementById('card-grid');
-        if (grid) grid.innerHTML = '<p class="text-red-500 col-span-full text-center py-10">数据加载失败，请检查 config.json 和 data 目录。</p>';
+        if (grid) grid.innerHTML = `<p class="text-red-500 col-span-full text-center py-10">
+            数据加载失败: <strong>${error.message}</strong><br>
+            <small class="text-gray-400">请打开控制台 (F12) 查看详细错误</small>
+        </p>`;
     }
 };
 
@@ -75,8 +80,7 @@ window.initResourceSite = async function() {
 const CACHE_PREFIX = 'zaozi_data_';
 
 async function loadAllData() {
-    // ✅ 统一使用 utils.js 中的 getBeijingDate()
-    const today = getBeijingDate();
+    const today = getBeijingDate(); // 使用 utils.js 的全局函数
     const cacheKey = CACHE_PREFIX + today;
 
     const cached = localStorage.getItem(cacheKey);
@@ -93,9 +97,11 @@ async function loadAllData() {
     console.log(`📡 [${today}] 首次加载，请求数据...`);
     const allItems = [];
     for (const file of AppState.config.dataFiles) {
+        console.log(`  → 正在加载: ${file}`); // ✅ FIX 5: 增加每个文件的加载日志
         const res = await fetch(file);
-        if (!res.ok) throw new Error(`Failed to load ${file}`);
+        if (!res.ok) throw new Error(`无法加载 ${file} (HTTP ${res.status})`);
         const items = await res.json();
+        console.log(`  ✓ ${file} 加载成功，${items.length} 条数据`);
         allItems.push(...items);
     }
     AppState.allData = allItems;
@@ -227,7 +233,6 @@ function renderPagination(totalPages) {
     container.insertAdjacentHTML('beforeend', `<button class="page-btn" ${AppState.currentPage === totalPages ? 'disabled' : ''} data-page="next">下一页</button>`);
 }
 
-// ✅ 渲染父分类行
 function renderParentCategories() {
     const bar = document.getElementById('parent-category-bar');
     const resetBtn = document.getElementById('btn-reset-category');
@@ -244,7 +249,6 @@ function renderParentCategories() {
     }
 }
 
-// ✅ 渲染子分类行
 function renderChildCategories(parentName) {
     const bar = document.getElementById('child-category-bar');
     bar.innerHTML = '';
@@ -284,7 +288,8 @@ const StatsManager = {
 
     async fetchStats() {
         try {
-            const res = await fetch(`${this.apiUrl}/api/stats`);
+            // ✅ FIX 6: 改用 statsFetch，自动带 X-Site-Host
+            const res = await statsFetch('/api/stats');
             const data = await res.json();
             
             const todayEl = document.getElementById('stat-today-views');
@@ -314,20 +319,21 @@ const StatsManager = {
     },
 
     recordView() {
-        // ✅ 统一使用 utils.js 中的 getBeijingDate()
         const today = getBeijingDate();
         const lastViewDate = localStorage.getItem('last_stats_view_date');
         
         if (lastViewDate !== today) {
-            fetch(`${this.apiUrl}/api/stats/view`, { method: 'POST' })
-                .then(() => localStorage.setItem('lastStatsViewDate', today))
+            // ✅ FIX 6: 改用 statsFetch + 统一 localStorage key
+            statsFetch('/api/stats/view', { method: 'POST' })
+                .then(() => localStorage.setItem('last_stats_view_date', today))
                 .catch(err => console.error("上报 PV 失败:", err));
         }
     },
 
     recordClick(title) {
         if (!this.apiUrl) return;
-        fetch(`${this.apiUrl}/api/stats/click`, {
+        // ✅ FIX 6: 改用 statsFetch
+        statsFetch('/api/stats/click', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title })
@@ -348,8 +354,6 @@ function showModal(item) {
         ${(item.categories || []).map(c => `<span class="bg-rose-100 text-rose-700 border border-rose-300 px-2.5 py-1 rounded-lg font-semibold">🏷️ ${c}</span>`).join('')}
     `;
 
-    // ✅ 清理死代码：build.py 的 clean_links 已过滤掉非 http 链接且不保留 note 字段
-    // 因此此处只需渲染有效的 http 链接，无需处理 note 分支和重复的 http 判断
     const linksContainer = document.getElementById('modal-links');
     linksContainer.innerHTML = '';
     
@@ -377,9 +381,7 @@ function updateStatusUI() {
     if (countEl) countEl.textContent = AppState.filteredData.length;
 }
 
-// ✅ 更新分类激活样式
 function updateCategoryActiveUI(activeCat) {
-    // 重置所有分类按钮为默认态
     document.querySelectorAll('.parent-cat-btn').forEach(el => {
         el.className = 'shrink-0 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-pink-700 border border-pink-300 hover:border-pink-500 hover:text-pink-800 hover:bg-pink-100 transition whitespace-nowrap parent-cat-btn';
     });
@@ -400,7 +402,6 @@ function updateCategoryActiveUI(activeCat) {
 }
 
 function bindEvents() {
-    // 1. 搜索框防抖
     let searchTimer;
     document.getElementById('search-input').addEventListener('input', (e) => {
         clearTimeout(searchTimer);
@@ -410,7 +411,6 @@ function bindEvents() {
         }, 300);
     });
 
-    // 2. 排序切换
     document.getElementById('sort-date').onclick = () => {
         AppState.sortMode = 'date';
         document.getElementById('sort-date').className = 'sort-btn px-3 py-1.5 rounded-md text-xs font-semibold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm whitespace-nowrap transition';
@@ -424,7 +424,6 @@ function bindEvents() {
         applyFiltersAndRender();
     };
 
-    // ✅ 3. 父分类点击
     document.getElementById('parent-category-bar').addEventListener('click', (e) => {
         const btn = e.target.closest('.parent-cat-btn');
         if (!btn) return;
@@ -439,7 +438,6 @@ function bindEvents() {
         applyFiltersAndRender();
     });
 
-    // ✅ 4. 子分类点击
     document.getElementById('child-category-bar').addEventListener('click', (e) => {
         const btn = e.target.closest('.child-cat-btn');
         if (!btn) return;
@@ -453,7 +451,6 @@ function bindEvents() {
         applyFiltersAndRender();
     });
 
-    // 5. 重置分类
     document.getElementById('btn-reset-category').onclick = () => {
         AppState.currentCategory = null;
         AppState.searchQuery = '';
@@ -464,7 +461,6 @@ function bindEvents() {
         applyFiltersAndRender();
     };
 
-    // 6. 分页点击
     document.getElementById('pagination').addEventListener('click', (e) => {
         const btn = e.target.closest('[data-page]');
         if (!btn || btn.disabled) return;
@@ -480,7 +476,6 @@ function bindEvents() {
         document.getElementById('main-content').scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    // 7. 弹窗关闭
     document.getElementById('modal-close').onclick = () => document.getElementById('modal').classList.add('hidden');
     document.getElementById('modal').onclick = (e) => {
         if (e.target.id === 'modal') document.getElementById('modal').classList.add('hidden');
