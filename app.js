@@ -1,3 +1,8 @@
+// ✅ 添加到 app.js 顶部，与 Worker 端的 getTodayStr() 逻辑保持一致
+function getBeijingDate() {
+  const now = new Date(Date.now() + 8 * 3600000);
+  return now.toISOString().split('T')[0];
+}
 // 统一统计请求，自动带 X-Site-Host，后续调用完全无感
 async function statsFetch(path, options = {}) {
   const url = `${config.statsApiUrl}${path}`;
