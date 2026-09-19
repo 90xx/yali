@@ -1,4 +1,3 @@
-
 // ================= 状态管理 =================
 const AppState = {
     allData: [],
@@ -61,9 +60,8 @@ window.initResourceSite = async function() {
 const CACHE_PREFIX = 'zaozi_data_';
 
 async function loadAllData() {
-    const now = new Date();
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    const today = new Date(utc + 8 * 3600000).toLocaleDateString('sv');
+    // ✅ 统一使用 utils.js 中的 getBeijingDate()
+    const today = getBeijingDate();
     const cacheKey = CACHE_PREFIX + today;
 
     const cached = localStorage.getItem(cacheKey);
@@ -301,7 +299,8 @@ const StatsManager = {
     },
 
     recordView() {
-        const today = new Date().toISOString().split('T')[0];
+        // ✅ 统一使用 utils.js 中的 getBeijingDate()
+        const today = getBeijingDate();
         const lastViewDate = localStorage.getItem('last_stats_view_date');
         
         if (lastViewDate !== today) {
@@ -334,6 +333,8 @@ function showModal(item) {
         ${(item.categories || []).map(c => `<span class="bg-rose-100 text-rose-700 border border-rose-300 px-2.5 py-1 rounded-lg font-semibold">🏷️ ${c}</span>`).join('')}
     `;
 
+    // ✅ 清理死代码：build.py 的 clean_links 已过滤掉非 http 链接且不保留 note 字段
+    // 因此此处只需渲染有效的 http 链接，无需处理 note 分支和重复的 http 判断
     const linksContainer = document.getElementById('modal-links');
     linksContainer.innerHTML = '';
     
@@ -341,20 +342,11 @@ function showModal(item) {
         linksContainer.innerHTML = '<p class="text-pink-400 text-sm text-center py-4 font-medium">暂无有效链接</p>';
     } else {
         item.links.forEach(link => {
-            if (link.url && link.url.startsWith('http')) {
-                linksContainer.insertAdjacentHTML('beforeend', `
-                    <a href="${link.url}" target="_blank" class="block w-full bg-pink-50 hover:bg-pink-100 border border-pink-300 hover:border-pink-500 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow-md">
-                        <span class="font-bold text-pink-600 text-sm">🔗 ${link.platform}</span>
-                        ${link.note ? `<span class="text-xs text-pink-500 ml-2">(${link.note})</span>` : ''}
-                    </a>
-                `);
-            } else if (link.note) {
-                linksContainer.insertAdjacentHTML('beforeend', `
-                    <div class="bg-pink-50 border border-dashed border-pink-300 rounded-xl p-3.5 text-sm text-pink-700">
-                        <span class="font-bold text-pink-700">📌 ${link.platform} 备注:</span> ${link.note}
-                    </div>
-                `);
-            }
+            linksContainer.insertAdjacentHTML('beforeend', `
+                <a href="${link.url}" target="_blank" class="block w-full bg-pink-50 hover:bg-pink-100 border border-pink-300 hover:border-pink-500 rounded-xl p-3.5 transition text-center shadow-sm hover:shadow-md">
+                    <span class="font-bold text-pink-600 text-sm">🔗 ${link.platform}</span>
+                </a>
+            `);
         });
     }
 

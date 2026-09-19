@@ -52,14 +52,8 @@
      };
 
   // ═══════════════════════════════════════════
-  // 2. 工具函数
+  // 2. 工具函数（已迁移至 utils.js，此处直接调用全局 getBeijingDate）
   // ═══════════════════════════════════════════
-  function getBeijingDate() {
-    const now = new Date();
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    return new Date(utc + 8 * 3600000).toLocaleDateString('sv');
-  }
-
   function checkVerified() {
     return localStorage.getItem('zaozi_verified') === getBeijingDate();
   }
@@ -86,6 +80,7 @@
   }
 
   function updateAccessInfo() {
+    // ✅ 统一使用 utils.js 中的 getBeijingDate()
     const today = getBeijingDate();
     const record = ACCESS_MAP[today];
     const dateSpan = document.getElementById('linkDate');
@@ -153,6 +148,7 @@
     if (verifyBtn) {
       verifyBtn.addEventListener('click', function () {
         const val = input.value.trim();
+        // ✅ 统一使用 utils.js 中的 getBeijingDate()
         const today = getBeijingDate();
         const record = ACCESS_MAP[today];
 
