@@ -1,13 +1,3 @@
-// 统一统计请求，自动带 X-Site-Host，后续调用完全无感
-async function statsFetch(path, options = {}) {
-  const url = `${config.statsApiUrl}${path}`;
-  const headers = {
-    'X-Site-Host': window.location.hostname,
-    ...(options.headers || {})
-  };
-  
-  return fetch(url, { ...options, headers });
-}
 // ================= 状态管理 =================
 const AppState = {
     allData: [],
@@ -263,30 +253,23 @@ function renderChildCategories(parentName) {
     bar.classList.remove('hidden');
 }
 
-// ================= 统计模块（多子域名适配版） =================
+// ================= 统计模块 =================
 const StatsManager = {
     apiUrl: '',
-    siteHost: '',
 
     init(config) {
         this.apiUrl = config.statsApiUrl;
-        // ✅ 获取当前页面的子域名，用于隔离统计
-        this.siteHost = window.location.hostname;
-
         if (!this.apiUrl) {
             console.warn("⚠️ 未配置 statsApiUrl，统计功能已禁用");
             return;
         }
-        console.log(`📊 统计子域名: ${this.siteHost}`);
         this.fetchStats();
         this.recordView();
     },
 
     async fetchStats() {
         try {
-            const res = await fetch(`${this.apiUrl}/api/stats`, {
-                headers: { 'X-Site-Host': this.siteHost }
-            });
+            const res = await fetch(`${this.apiUrl}/api/stats`);
             const data = await res.json();
             
             const todayEl = document.getElementById('stat-today-views');
@@ -299,13 +282,13 @@ const StatsManager = {
                     data.topResources.forEach((item, index) => {
                         topList.insertAdjacentHTML('beforeend', `
                             <li class="flex justify-between items-center">
-                                <span class="truncate mr-2 text-orange-700 font-medium" title="${item.title}">${index + 1}. ${item.title}</span>
-                                <span class="text-orange-600 font-mono text-xs font-bold bg-orange-100 px-2 py-0.5 rounded">${item.count}</span>
+                                <span class="truncate mr-2 text-pink-700 font-medium" title="${item.title}">${index + 1}. ${item.title}</span>
+                                <span class="text-pink-600 font-mono text-xs font-bold bg-pink-100 px-2 py-0.5 rounded">${item.count}</span>
                             </li>
                         `);
                     });
                 } else {
-                    topList.innerHTML = '<li class="text-orange-400 font-medium">暂无数据</li>';
+                    topList.innerHTML = '<li class="text-pink-400 font-medium">暂无数据</li>';
                 }
             }
         } catch (err) {
@@ -316,23 +299,13 @@ const StatsManager = {
     },
 
     recordView() {
-<<<<<<< HEAD
         // ✅ 统一使用 utils.js 中的 getBeijingDate()
         const today = getBeijingDate();
         const lastViewDate = localStorage.getItem('last_stats_view_date');
-=======
-        const today = getBeijingDate();
-        // ✅ 缓存 key 也按子域名隔离，避免不同子域名共用同一个 PV 去重标记
-        const cacheKey = `last_stats_view_${this.siteHost}_${today}`;
-        const lastViewDate = localStorage.getItem(cacheKey);
->>>>>>> c90b379 (更新数据)
         
         if (lastViewDate !== today) {
-            fetch(`${this.apiUrl}/api/stats/view`, {
-                method: 'POST',
-                headers: { 'X-Site-Host': this.siteHost }
-            })
-                .then(() => localStorage.setItem(cacheKey, today))
+            fetch(`${this.apiUrl}/api/stats/view`, { method: 'POST' })
+                .then(() => localStorage.setItem('lastStatsViewDate', today))
                 .catch(err => console.error("上报 PV 失败:", err));
         }
     },
@@ -341,16 +314,14 @@ const StatsManager = {
         if (!this.apiUrl) return;
         fetch(`${this.apiUrl}/api/stats/click`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Site-Host': this.siteHost
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title })
         }).catch(err => console.error("上报点击失败:", err));
         
         setTimeout(() => this.fetchStats(), 1000);
     }
 };
+
 // ================= UI 交互与事件 =================
 function showModal(item) {
     const modal = document.getElementById('modal');
