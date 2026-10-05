@@ -286,33 +286,31 @@ const StatsManager = {
         this.recordView();
     },
 
-    async fetchStats() {
-        try {
-            const res = await statsFetch('/api/stats');
-            const data = await res.json();
+async fetchStats() {
+    try {
+        const res = await statsFetch('/api/stats');
+        const data = await res.json();
 
-            // 今日访问
-            const todayEl = document.getElementById('stat-today-views');
-            if (todayEl) todayEl.textContent = data.todayViews.toLocaleString();
+        const todayEl = document.getElementById('stat-today-views');
+        if (todayEl) todayEl.textContent = data.todayViews.toLocaleString();
 
-            // ✅ 累计总访问
-            const totalEl = document.getElementById('stat-total-views');
-            if (totalEl) totalEl.textContent = data.totalViews.toLocaleString();
+        const totalEl = document.getElementById('stat-total-views');
+        if (totalEl) totalEl.textContent = data.totalViews.toLocaleString();
 
-            // ✅ 今日热度 Top5：使用原始简洁样式
-            this.renderSimpleTopList('stat-top-resources', data.topResourcesToday, '暂无今日数据');
+        // ✅ 今日热度 Top5
+        this.renderSimpleTopList('stat-top-resources', data.topResourcesToday, '暂无今日数据');
 
-            // ✅ 累计热度 Top20：使用新样式（圆形徽章+双列）
-            this.renderRankedTopList('stat-top-all-resources', data.topResourcesAll, '暂无累计数据');
+        // ✅ 总热度 Top20：改为使用与今日热度相同的渲染函数
+        this.renderSimpleTopList('stat-top-all-resources', data.topResourcesAll, '暂无累计数据');
 
-        } catch (err) {
-            console.error("获取统计数据失败:", err);
-            ['stat-today-views', 'stat-total-views'].forEach(id => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = '--';
-            });
-        }
-    },
+    } catch (err) {
+        console.error("获取统计数据失败:", err);
+        ['stat-today-views', 'stat-total-views'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '--';
+        });
+    }
+},
 
     // ✅ 今日热度专用：恢复原始简洁样式
     renderSimpleTopList(containerId, list, emptyText) {
