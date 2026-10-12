@@ -48,7 +48,7 @@
     '2026-10-09': { link: 'https://pan.quark.cn/s/82755ca81c3b', code: '3ikp' },
     '2026-10-10': { link: 'https://pan.quark.cn/s/95e983373a8b', code: 'dwc9' },
     '2026-10-11': { link: 'https://pan.quark.cn/s/574d6b63400a', code: 'll7n' },
-    '2026-10-12': { link: 'https://pan.quark.cn/s/c1b462986761', code: 'szjq' }
+    '2026-10-13': { link: 'https://pan.quark.cn/s/2d845545b9c6', code: 'zpwj' }
      };
 
   // ═══════════════════════════════════════════
